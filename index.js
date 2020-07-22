@@ -16,7 +16,7 @@ app.use(function (req, res, next) {
 
 const mongodb = require('mongodb');
 const mongoClient = mongodb.MongoClient;
-const dbURL = "mongodb://localhost:27017";
+// const dbURL = "mongodb://localhost:27017";
 const dbUrl = `mongodb+srv://Nishu1234:nish34248@cluster0.fsljb.mongodb.net/Services?retryWrites=true&w=majority`
 
 app.listen(port, () => {
