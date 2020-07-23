@@ -114,4 +114,9 @@ app.get("/viewRequests", async (req, res) => {
             message: data
         });
     }
+    else{
+        res.status(400).json({
+            message: "Db cannot be found"
+        });
+    }
 });
