@@ -39,8 +39,7 @@ app.post('/createServiceRequest', async(req, res) => {
             no: req.body.no,
             name: req.body.name, 
             address: req.body.address, 
-            telephone: req.body.telephone, 
-            note: req.body.note 
+            mobileno: req.body.mobileno 
         };
         let data = await db.collection("customers").insertOne(customer).catch((err) => {throw err;});
         client.close();
@@ -111,6 +110,8 @@ app.get("/viewRequests", async (req, res) => {
     let data = await db.collection("customers").find().catch((err) => {throw err;});
     client.close();
     if(data){
-        res.send(data);
+        res.status(200).json({
+            message: data
+        });
     }
 });
