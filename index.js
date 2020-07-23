@@ -104,19 +104,14 @@ app.post('/changeemployeestatus', async(req, res) => {
     }
 });
 
-app.get("/viewRequests", async (req, res) => {
-    let client = await mongoClient.connect(dbURL).catch((err) => {throw err;});
-    let db = client.db("Services");
-    let data = await db.collection("customers").find({}).toArray.catch((err) => {throw err;});
-    client.close();
-    if(data){
-        res.status(200).json({
-            message: data
+app.get("/viewRequests", (req, res) => {
+    mongoClient.connect(dbURL, (err, client) => {
+        if(err) throw err;
+        let db = client.db("Services");
+        db.collection("customers").find({}).toArray((err, result) => {
+            if(err) throw err;
+            res.send(result);
+            db.close();
         });
-    }
-    else{
-        res.status(400).json({
-            message: "Db cannot be found"
-        });
-    }
+    });
 });
