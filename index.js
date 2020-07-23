@@ -107,7 +107,7 @@ app.post('/changeemployeestatus', async(req, res) => {
 app.get("/viewRequests", async (req, res) => {
     let client = await mongoClient.connect(dbURL).catch((err) => {throw err;});
     let db = client.db("Services");
-    let data = await db.collection("customers").find({}).catch((err) => {throw err;});
+    let data = await db.collection("customers").find({}).toArray.catch((err) => {throw err;});
     client.close();
     if(data){
         res.status(200).json({
