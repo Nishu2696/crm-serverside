@@ -70,17 +70,20 @@ async function authenticate(req, res, next) {
     }
 }
 
-function permission(user) {
-    return (req, res, next) => {
-        if ((user == "admin") || (user == "manager")) {
-            next();
+function permission(req, res, next) {
+    if (req.userType == undefined) {
+        res.status(401).json({
+          message: "Please provide with the employee roll",
+        });
+      } else {
+        if ((req.userType == "manager") || (req.userType == "admin")) {
+          next();
+        } else {
+          res.status(401).json({
+            message: "Particular employee is not authorized to do this activity"
+          });
         }
-        else {
-            res.status(401).json({
-                message: "Unauthorized Users"
-            });
-        }
-    }
+      }
 }
 
 app.listen(port, () => {
@@ -322,7 +325,7 @@ function accessVerification(access) {
     }
 }
 
-app.post('/addusers', [authenticate, permission(["manager", "admin"])], async (req, res) => {
+app.post('/addusers', [authenticate, permission], async (req, res) => {
 
     if (req.body.email == undefined || req.body.password == undefined) {
         res.status(400).json({
