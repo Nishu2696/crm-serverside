@@ -306,6 +306,68 @@ app.post('/resetpassword', (req, res) => {
 
 //first a registerd employee is rising a service request and storing it in a DB
 
+app.get("/", (req, res) => {
+    res.json({
+        list_of_routes: [
+            {
+                route: "register",
+                method: "post"
+            },
+            {
+                route: "accountverification",
+                method: "post"
+            },
+            {
+                route: "forgot",
+                method: "post"
+            },
+            {
+                route: "resetpassword",
+                method: "post"
+            },
+            {
+                route: "login",
+                method: "post"
+            },
+            {
+                route: "addusers",
+                method: "post"
+            },
+            {
+                route: "creatingLead",
+                method: "post"
+            },
+            {
+                route: "updatingLead",
+                method: "put"
+            },
+            {
+                route: "deletingLead",
+                method: "delete"
+            },
+            {
+                route: "listofLead",
+                method: "get"
+            },
+            {
+                route: "creatingContact",
+                method: "post"
+            },
+            {
+                route: "updatingContact",
+                method: "put"
+            },
+            {
+                route: "deletingContact",
+                method: "delete"
+            },
+            {
+                route: "listofContacts",
+                method: "get"
+            }
+        ]
+    });
+})
 
 function accessVerification(access) {
     const isAllowed = accessRights => accessRights.indexOf(access) > -1;
@@ -392,7 +454,7 @@ app.post('/addusers', [authenticate, permission], async (req, res) => {
 
 });
 
-app.post('/createLead', [authenticate, accessVerification("create")], async (req, res) => {
+app.post('/creatingLead', [authenticate, accessVerification("create")], async (req, res) => {
 
     if (req.body.email == undefined || req.body.password == undefined) {
         res.status(400).json({
@@ -451,7 +513,7 @@ app.post('/createLead', [authenticate, accessVerification("create")], async (req
     }
 });
 
-app.put('/updatelead', [authenticate, accessVerification("update")], async(req, res) => {
+app.put('/updatingLead', [authenticate, accessVerification("update")], async(req, res) => {
     let { leadId } = req.body;
     if (leadId === undefined) {
         res.status(400).json({
@@ -470,7 +532,7 @@ app.put('/updatelead', [authenticate, accessVerification("update")], async(req, 
     }
 });
 
-app.delete('/deletelead', [authenticate, accessVerification("delete")], async(req, res) => {
+app.delete('/deletingLead', [authenticate, accessVerification("delete")], async(req, res) => {
     let { leadId } = req.body;
     if (leadId === undefined) {
         res.status(400).json({
@@ -489,7 +551,7 @@ app.delete('/deletelead', [authenticate, accessVerification("delete")], async(re
     }
 });
 
-app.get('/listlead', [authenticate, accessVerification("view")], async(req, res) => {
+app.get('/listofLeads', [authenticate, accessVerification("view")], async(req, res) => {
     let client = await mongoClient.connect(dbURL).catch(err => { throw err });
     let db = client.db('Services');
     let leads = await db.collection("lead").find().toArray().catch(err => { throw err; });
@@ -499,7 +561,7 @@ app.get('/listlead', [authenticate, accessVerification("view")], async(req, res)
     });
 });
 
-app.post('/createcontact', [authenticate, accessVerification("create")], async(req, res) => {
+app.post('/creatingContact', [authenticate, accessVerification("create")], async(req, res) => {
     
     if (req.body.email == undefined || req.body.password == undefined) {
         res.status(400).json({
@@ -516,7 +578,7 @@ app.post('/createcontact', [authenticate, accessVerification("create")], async(r
     }
 });
 
-app.put('/updatecontact', [authenticate, accessVerification("update")], async(req, res) => {
+app.put('/updatingContact', [authenticate, accessVerification("update")], async(req, res) => {
     let { contactId } = req.body;
     if (contactId === undefined) {
         res.status(400).json({
@@ -535,7 +597,7 @@ app.put('/updatecontact', [authenticate, accessVerification("update")], async(re
     }
 });
 
-app.delete('/deletecontact', [authenticate, accessVerification("delete")], async(req, res) => {
+app.delete('/deletingContact', [authenticate, accessVerification("delete")], async(req, res) => {
     let { contactId } = req.body;
     if (contactId === undefined) {
         res.status(400).json({
@@ -554,7 +616,7 @@ app.delete('/deletecontact', [authenticate, accessVerification("delete")], async
     }
 });
 
-app.get('/listcontacts', [authenticate, accessVerification("view")], async(req, res) => {
+app.get('/listofContacts', [authenticate, accessVerification("view")], async(req, res) => {
     let client = await mongoClient.connect(dbURL).catch(err => { throw err });
     let db = client.db('Services');
     let contacts = await db.collection("contactlist").find({}).toArray().catch(err => { throw err; });
