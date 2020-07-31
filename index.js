@@ -578,6 +578,18 @@ app.get('/listofLeads', [authenticate, accessVerification("view")], async(req, r
     });
 });
 
+app.get("/listofLeads/:id", [authenticate, accessVerification("view")], async(req, res) => {
+    let leadId = req.params.id;
+    leadId = new ObjectId(leadId);
+    let client = await mongodb.connect(dbURL, { useUnifiedTopology: true }).catch(err => { throw err });
+    let db = client.db("Services");
+    let leads = await db.collection("lead").find({ "_id": leadId }).toArray().catch(err => { throw err; });
+    client.close();
+    res.status(200).json({
+        leads
+    });
+});
+
 app.post('/creatingContact', [authenticate, accessVerification("create")], async(req, res) => {
     
     if (req.body.email == undefined || req.body.password == undefined) {
