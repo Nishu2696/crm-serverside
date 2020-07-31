@@ -549,7 +549,7 @@ app.put("/updatingleadstatus", [authenticate, accessVerification("update")], asy
     }
 });
 
-app.delete('/deletingLead', [authenticate, accessVerification("delete")], async(req, res) => {
+app.delete('/deletingLead/:id', [authenticate, accessVerification("delete")], async(req, res) => {
     let { leadId } = req.body;
     if (leadId === undefined) {
         res.status(400).json({
