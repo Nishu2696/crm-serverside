@@ -219,7 +219,7 @@ app.post('/accountverification', async (req, res) => {
     }
 });
 
-app.post('/forgot', (req, res) => {
+app.post('/forget', (req, res) => {
     require('crypto').randomBytes(32, function (ex, buf) {
         var token = buf.toString('hex');
         // console.log(token);
@@ -306,66 +306,13 @@ app.post('/resetpassword', (req, res) => {
 
 //first a registerd employee is rising a service request and storing it in a DB
 
-app.get("/", (req, res) => {
-    res.json({
-        list_of_routes: [
-            {
-                route: "register",
-                method: "post"
-            },
-            {
-                route: "accountverification",
-                method: "post"
-            },
-            {
-                route: "forgot",
-                method: "post"
-            },
-            {
-                route: "resetpassword",
-                method: "post"
-            },
-            {
-                route: "login",
-                method: "post"
-            },
-            {
-                route: "addusers",
-                method: "post"
-            },
-            {
-                route: "creatingLead",
-                method: "post"
-            },
-            {
-                route: "updatingLead",
-                method: "put"
-            },
-            {
-                route: "deletingLead",
-                method: "delete"
-            },
-            {
-                route: "listofLead",
-                method: "get"
-            },
-            {
-                route: "creatingContact",
-                method: "post"
-            },
-            {
-                route: "updatingContact",
-                method: "put"
-            },
-            {
-                route: "deletingContact",
-                method: "delete"
-            },
-            {
-                route: "listofContacts",
-                method: "get"
-            }
-        ]
+app.get("/getallusers", [authenticate, accessVerification("view")], async (req, res) => {
+    let client = await mongodb.connect(dbURL, { useUnifiedTopology: true }).catch(err => { throw err });
+    let db = client.db("Services");
+    let users = await db.collection("customers").find({}, { projection: { _id: 0, email: 1, firstName: 1, lastName: 1 } }).toArray().catch(err => { throw err; });
+    client.close();
+    res.status(200).json({
+        users
     });
 })
 
@@ -528,6 +475,76 @@ app.put('/updatingLead', [authenticate, accessVerification("update")], async(req
         client.close();
         res.status(200).json({
             message: 'Lead updated'
+        });
+    }
+});
+
+app.put("/updatingleadstatus", [authenticate, accessVerification("update")], async(req, res) => {
+    let { leadId, leadStatus } = req.body;
+    if (leadId === undefined || leadStatus === undefined) {
+        res.status(400).json({
+            message: 'Required Fields missing'
+        });
+    }
+    else {
+        let client = await mongodb.connect(dbURL, { useUnifiedTopology: true }).catch(err => { throw err });
+        let db = client.db("Services");
+        leadId = new ObjectId(leadId);
+        let data = await db.collection('lead').find({ '_id': leadId }).toArray().catch(err => { throw err });
+        await db.collection('lead').updateOne({ '_id': leadId }, { $set: { leadStatus } }).catch(err => { throw err });
+        console.log(data);
+        let managers = await db.collection('customers').find({ userType: "manager" }).toArray().catch(err => { throw err; });
+        for (let i of managers) {
+            mailOptions.to = i.email;
+            mailOptions.subject = 'Lead status update';
+            mailOptions.html = `<html><body><h1>Lead Status Updated</h1>
+            <p>Lead status updated from <b>${data[0].leadStatus}</b> to <b>${leadStatus}</p>
+            <h3>Details of lead</h3>
+            <h5>Lead Owner Email: ${data[0].owner}</h5>
+            <h5>Lead Owner Name: ${data[0].ownerName}</h5>
+            <h5>First Name : ${data[0].firstName}</h5>
+            <h5>Last Name : ${data[0].lastName}</h5>
+            <h5>Email : ${data[0].email}</h5>
+            <h5>Company : ${data[0].company}</h5>
+            <h5>Title : ${data[0].title}</h5>
+            <h5>Phone Number : ${data[0].phone}</h5>
+            <h5>Lead Status : ${data[0].leadStatus}</h5>`;
+            transporter.sendMail(mailOptions, function(error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+        }
+        let admins = await db.collection('customers').find({ userType: "admin" }).toArray().catch(err => { throw err; });
+        // console.log(admins);
+        for (let i of admins) {
+            mailOptions.to = i.email;
+            mailOptions.subject = 'Lead status update';
+            mailOptions.html = `<html><body><h1>New Status updated</h1>
+            <p>Lead status updated from <b>${data[0].leadStatus}</b> to <b>${leadStatus}</p>
+            <h3>Details of lead</h3>
+            <h5>Lead Owner Email: ${data[0].owner}</h5>
+            <h5>Lead Owner Name: ${data[0].ownerName}</h5>
+            <h5>First Name : ${data[0].firstName}</h5>
+            <h5>Last Name : ${data[0].lastName}</h5>
+            <h5>Email : ${data[0].email}</h5>
+            <h5>Company : ${data[0].company}</h5>
+            <h5>Title : ${data[0].title}</h5>
+            <h5>Phone Number : ${data[0].phone}</h5>
+            <h5>Lead Status : ${leadStatus}</h5>`;
+            transporter.sendMail(mailOptions, function(error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    console.log('Email sent: ' + info.response);
+                }
+            });
+        }
+        client.close();
+        res.status(200).json({
+            message: 'Lead Status updated'
         });
     }
 });
