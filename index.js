@@ -306,7 +306,7 @@ app.post('/resetpassword', (req, res) => {
 
 //first a registerd employee is rising a service request and storing it in a DB
 
-app.get("/getallusers", [authenticate, accessVerification("view")], async (req, res) => {
+app.get("/getusers", [authenticate, accessVerification("view")], async (req, res) => {
     let client = await mongodb.connect(dbURL, { useUnifiedTopology: true }).catch(err => { throw err });
     let db = client.db("Services");
     let users = await db.collection("customers").find({}, { projection: { _id: 0, email: 1, firstName: 1, lastName: 1 } }).toArray().catch(err => { throw err; });
